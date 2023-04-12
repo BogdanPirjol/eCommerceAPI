@@ -6,6 +6,9 @@ const app = express();
 //database
 const connectDB = require('./db/connectDB');
 
+//something went wrong
+const notFound = require('./middleware/notFound');
+app.use(notFound);
 
 const start = async () => {
     try{
