@@ -6,9 +6,15 @@ const app = express();
 //database
 const connectDB = require('./db/connectDB');
 
-//something went wrong
+//default route
+app.get('/', (req, res) => {
+    res.send('<h1> E-Commerce API</h1>');
+});
+
+//something went wrong middleware
 const notFound = require('./middleware/notFound');
 app.use(notFound);
+
 
 const start = async () => {
     try{
