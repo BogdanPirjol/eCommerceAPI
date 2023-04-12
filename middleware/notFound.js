@@ -1,5 +1,5 @@
 const notFound = (req, res) => {
-    res.send('Page not found');
+    res.send('Ups! Page doesn`t exist!');
 }
 
 module.exports = notFound;
