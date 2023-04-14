@@ -1,11 +1,12 @@
 const sequelize = require('../db/connectDB');
 const { DataTypes } = require('sequelize');
+const bcrypt = require('bcrypt');
 
 const User = sequelize().define('User',
     {
         id: {
             type: DataTypes.UUID,
-            default: DataTypes.UUIDV4,
+            defaultValue: DataTypes.UUIDV4,
             primaryKey: true
         },
         name: {
@@ -27,8 +28,15 @@ const User = sequelize().define('User',
         }, 
         role: {
             type: DataTypes.STRING,
-            default: 'user',
-            allowNull: false
+            defaultValue: 'user'
+        }
+    }, {
+        hooks: {
+            beforeCreate: async (user, options) => {
+                const salt = await bcrypt.genSalt();
+                const hashedPassword = await bcrypt.hash(user.password, salt);
+                user.password = hashedPassword;
+            }
         }
     });
 
