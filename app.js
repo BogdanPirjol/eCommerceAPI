@@ -16,6 +16,10 @@ app.get('/', (req, res) => {
     res.send('<h1> E-Commerce API</h1>');
 });
 
+//routes
+const authRouter = require('./routes/authRoutes');
+app.use('/api/v1/auth', authRouter);
+
 //something went wrong middleware
 const notFound = require('./middleware/notFound');
 const errorHandler = require('./middleware/errorHandler');
@@ -29,6 +33,9 @@ const start = async () => {
         //checking connection to DB
         const sequelize = await connectDB();
         await sequelize.authenticate();
+
+        //sync models
+        await sequelize.sync();
 
         //strating server
         const PORT = process.env.PORT || 3000;
