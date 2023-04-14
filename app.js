@@ -1,10 +1,12 @@
 require('dotenv').config();
 
 const express = require('express');
+require('express-async-errors');
 const app = express();
 const morgan = require('morgan');
 
 //middleware
+app.use(express.static('public'));
 app.use(express.json());
 app.use(morgan('tiny'));
 
@@ -36,6 +38,7 @@ const start = async () => {
 
         //sync models
         await sequelize.sync();
+        //await sequelize.drop();
 
         //strating server
         const PORT = process.env.PORT || 3000;
