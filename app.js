@@ -16,7 +16,10 @@ app.get('/', (req, res) => {
 
 //something went wrong middleware
 const notFound = require('./middleware/notFound');
+const errorHandler = require('./middleware/errorHandler');
+app.use(errorHandler);
 app.use(notFound);
+
 
 
 const start = async () => {
