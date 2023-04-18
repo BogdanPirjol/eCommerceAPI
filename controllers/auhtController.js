@@ -1,13 +1,34 @@
 const User = require('../models/User');
 const { StatusCodes } = require('http-status-codes');
-const { createToken } = require('../utils');
+const { attachCookieToResponse } = require('../utils');
+const { BadRequest, UnauthenticatedError } = require('../errors');
 
-const login = (req, res) => {
-    res.send('login fucntionality');
+const login = async (req, res) => {
+    const {email, password} = req.body;
+    if(!email || !password){
+        throw new BadRequest('please provide email and password!');
+    }
+    const user = await User.findOne({
+        where: {
+            email: email
+        }
+    });
+    if(!user)
+        throw new BadRequest('user does not exists!');
+    const isPasswordValid = await user.checkPassword(password);
+    if(!isPasswordValid)
+        throw new UnauthenticatedError('wrong password');
+    const payload = {
+        name: user.name,
+        id: user.id,
+        role: user.role
+    };
+    attachCookieToResponse(res, payload);
+    res.status(StatusCodes.OK).json(payload);
 }
 
 const logout = (req, res) => {
-    res.send('logout fucntionality');
+    
 }
 
 const register = async (req, res) => {
@@ -18,12 +39,12 @@ const register = async (req, res) => {
         userId: user.id,
         role: user.role
     };
-    const token = createToken({payload: payload, expiresIn: '2h'});
-    res.status(StatusCodes.CREATED).json({ "user": user.dataValues, token: token });
+    attachCookieToResponse(res, payload);
+    res.status(StatusCodes.CREATED).json({ "user": payload});
 }
 
 module.exports = {
     login,
     logout,
     register
-}
+}  
