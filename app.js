@@ -4,11 +4,13 @@ const express = require('express');
 require('express-async-errors');
 const app = express();
 const morgan = require('morgan');
+const cookieParser = require('cookie-parser');
 
 //middleware
 app.use(express.static('public'));
 app.use(express.json());
 app.use(morgan('tiny'));
+app.use(cookieParser(process.env.JWT_SECRET));
 
 //database
 const connectDB = require('./db/connectDB');
@@ -28,7 +30,6 @@ const errorHandler = require('./middleware/errorHandler');
 
 app.use(notFound);
 app.use(errorHandler);
-
 
 const start = async () => {
     try{
@@ -50,4 +51,4 @@ const start = async () => {
     }
 }
 
-start();
+start(); 
