@@ -14,7 +14,7 @@ app.use(cookieParser(process.env.JWT_SECRET));
 
 //database
 const connectDB = require('./db/connectDB');
-
+ 
 //default route
 app.get('/', (req, res) => {
     res.send('<h1> E-Commerce API</h1>');
@@ -22,7 +22,9 @@ app.get('/', (req, res) => {
 
 //routes
 const authRouter = require('./routes/authRoutes');
+const userRouter = require('./routes/userRoutes');
 app.use('/api/v1/auth', authRouter);
+app.use('/api/v1/users', userRouter);
 
 //something went wrong middleware
 const notFound = require('./middleware/notFound');

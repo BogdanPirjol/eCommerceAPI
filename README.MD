@@ -29,3 +29,13 @@
 [x] check if email already in use
 [x] igone 'role'
 [] alternative 'admin' setup
+
+#### User Routes Structure
+[x] add userController file
+[x] export (getAllUsers, getSingleUser, showCurrentUser, updateUser, updatePasswordUser) functions
+[x] res.send('dummy value')
+[x] setup userRoutes file
+[x] import all controllers
+[x] setup just one route - retrieve all users
+[x] import userRoutes as userRouter in the app.js
+[x] setup app.use('/api/v1/users', userRouter) 
