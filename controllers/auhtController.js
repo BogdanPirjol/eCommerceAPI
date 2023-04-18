@@ -28,7 +28,18 @@ const login = async (req, res) => {
 }
 
 const logout = (req, res) => {
+    //1st method
+    //using res.clearCookie()
+    //but cookie options are mandatory
     
+    //2nd method
+    //seting an descreptive message (optional: used just in dev)
+    //setting expires options to current date (expecting browser to remove mentioned cookie)
+    res.cookie('token', 'logout', {
+        httpOnly: true,
+        expires: new Date(Date.now())
+    });
+    res.status(StatusCodes.OK).json({msg: 'user logged out!'});
 }
 
 const register = async (req, res) => {
