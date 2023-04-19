@@ -1,4 +1,4 @@
-const { CustomError } = require('./index');
+const CustomError = require('./customErrorAPI');
 const { StatusCodes } = require('http-status-codes');
 
 class UnauthorizedError extends CustomError {
