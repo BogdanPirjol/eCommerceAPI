@@ -16,7 +16,16 @@ const getAllUsers = async(req, res) => {
 }
 
 const getSingleUser = async(req, res) => {
-    res.send('getSingleUser');
+    const {userId: id} = req.params;
+    const user = await User.findOne({
+        where: {
+            id: id
+        },
+        attributes: ['id', 'name', 'email', 'role']
+    });
+    if(!user)
+        throw new NotFoundError(`Users with id:${id} not found!`);
+    res.status(StatusCodes.OK).json(user);
 }
 
 const showCurrentUser = async(req, res) => {
