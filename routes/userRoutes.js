@@ -7,7 +7,7 @@ const {
     showCurrentUser } = require('../controllers/userController');
 
 router.route('/').get(getAllUsers);
+router.route('/showMe').get(showCurrentUser);
 router.route('/:userId').get(getSingleUser).patch(updateUser).post(updateUsersPassword);
-router.route('/:userId').get(showCurrentUser);
 
 module.exports = router;
