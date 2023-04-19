@@ -19,10 +19,9 @@ const authenticateUser = async (req, res, next) => {
 }
 
 const authorizeAdmin = (...roles) => {
-    console.log(roles);
     return (req, res, next) => {
-        if(role !== 'admin')
-            throw new UnauthorizedError('Authorization error');
+        if(!roles.includes(req.user.role))
+            throw new UnauthorizedError('Unauthorized to acces requested resource!');
         next();
     }
 }

@@ -1,13 +1,24 @@
 const router = require('express').Router();
+const { authenticateUser, authorizeAdmin }= require('../middleware/authentication');
 const {
     getAllUsers,
     getSingleUser,
     updateUser,
     updateUsersPassword,
     showCurrentUser } = require('../controllers/userController');
+//public
+router.route('/').get(authenticateUser, getAllUsers);
 
-router.route('/').get(getAllUsers);
-router.route('/showMe').get(showCurrentUser);
-router.route('/:userId').get(getSingleUser).patch(updateUser).post(updateUsersPassword);
+//protected
+router.route('/showMe').get(authenticateUser, authorizeAdmin('user', 'test'), showCurrentUser);
+
+//public
+router.route('/:userId').get(authenticateUser, getSingleUser);
+
+
+//protected
+router.route('/updateUser').patch(updateUser);
+router.route('/updatePassword').patch(updateUsersPassword);
+
 
 module.exports = router;
