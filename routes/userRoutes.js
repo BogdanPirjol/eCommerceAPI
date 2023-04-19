@@ -10,7 +10,7 @@ const {
 router.route('/').get(authenticateUser, getAllUsers);
 
 //protected
-router.route('/showMe').get(authenticateUser, authorizeAdmin('user', 'test'), showCurrentUser);
+router.route('/showMe').get(authenticateUser, showCurrentUser);
 
 //public
 router.route('/:userId').get(authenticateUser, getSingleUser);
