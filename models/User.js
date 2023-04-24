@@ -19,29 +19,36 @@ const User = sequelize().define('User',
             allowNull: false,
             validate: {
                 isEmail: true
-            }, 
+            },
             unique: true
         },
         password: {
             type: DataTypes.STRING,
             allowNull: false,
             len: [6, 100]
-        }, 
+        },
         role: {
             type: DataTypes.STRING,
             defaultValue: 'user'
         }
     }, {
-        hooks: {
-            beforeCreate: async (user, options) => {
+    hooks: {
+        beforeCreate: async (user) => {
+            const salt = await bcrypt.genSalt();
+            const hashedPassword = await bcrypt.hash(user.password, salt);
+            user.password = hashedPassword;
+        },
+        beforeUpdate: async (user, options) => {
+            if (options.fields.includes('password')) {
                 const salt = await bcrypt.genSalt();
                 const hashedPassword = await bcrypt.hash(user.password, salt);
                 user.password = hashedPassword;
             }
         }
-    });
+    }
+});
 
-User.prototype.checkPassword = async function(passowrd){
+User.prototype.checkPassword = async function (passowrd) {
     const isMatch = await bcrypt.compare(passowrd, this.dataValues.password);
     return isMatch;
 }
