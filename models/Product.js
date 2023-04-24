@@ -1,5 +1,6 @@
 const sequelize = require('../db/connectDB')();
 const { DataTypes } = require('sequelize');
+const User = require('./User');
 
 const Product = sequelize.define('Products', {
     id: {
@@ -45,6 +46,21 @@ const Product = sequelize.define('Products', {
     },
     averageRating: {
         type: DataTypes.FLOAT,
+        allowNull: false
+    }
+});
+
+User.hasMany(Product, {
+    foreignKey: {
+        name: 'userId',
+        type: DataTypes.UUID,
+        allowNull: false
+    }
+});
+Product.belongsTo(User, {
+    foreignKey: {
+        name: 'userId',
+        type: DataTypes.UUID,
         allowNull: false
     }
 });
