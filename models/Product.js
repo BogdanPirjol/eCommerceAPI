@@ -1,32 +1,37 @@
 const sequelize = require('../db/connectDB')();
 const { DataTypes } = require('sequelize');
 
-const Product = sequelize.define('Porducts', {
+const Product = sequelize.define('Products', {
     id: {
-        type: DataTypes.UUIDV4,
-        defaultValue: DataTypes.UUID,
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
         primaryKey: true
     },
     name: {
-        type: DataTypes.STRING
+        type: DataTypes.STRING,
+        allowNull: false
     },
     price: {
-        type: DataTypes.FLOAT
+        type: DataTypes.FLOAT,
+        allowNull: false
     },
     description: {
         type: DataTypes.STRING
     },
     image: {
-        type: DataTypes.STRING
+        type: DataTypes.STRING,
+        allowNull: false
     },
     category: {
-        type: DataTypes.STRING
+        type: DataTypes.STRING,
+        allowNull: false
     },
     company: {
-        type: DataTypes.STRING
+        type: DataTypes.STRING,
+        allowNull: false
     },
     colors: {
-        type: DataTypes.ARRAY
+        type: DataTypes.ARRAY(DataTypes.STRING)
     },
     featured: {
         type: DataTypes.BOOLEAN
@@ -35,10 +40,12 @@ const Product = sequelize.define('Porducts', {
         type: DataTypes.BOOLEAN
     },
     inventory: {
-        type: DataTypes.NUMBER
+        type: DataTypes.INTEGER,
+        allowNull: false
     },
     averageRating: {
-        type: DataTypes.FLOAT
+        type: DataTypes.FLOAT,
+        allowNull: false
     }
 });
 
