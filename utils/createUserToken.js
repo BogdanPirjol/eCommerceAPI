@@ -1,5 +1,5 @@
 
-const createToken = ({ user }) => {
+const createToken = (user) => {
     return {
         name: user.name,
         id: user.id,

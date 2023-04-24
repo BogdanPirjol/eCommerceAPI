@@ -39,3 +39,13 @@
 [x] setup just one route - retrieve all users
 [x] import userRoutes as userRouter in the app.js
 [x] setup app.use('/api/v1/users', userRouter) 
+
+#### UpdateUserPassword
+
+[x] add authenicate user in the route
+[x] check for old and new password in the body
+[x] if one missing 400
+[x] look for user in db 
+[x] check if old password matches with users password
+[x] if no match 401
+[x] if OK, update users passwordS
