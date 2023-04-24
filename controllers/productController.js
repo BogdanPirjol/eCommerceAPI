@@ -2,18 +2,30 @@ const { CustomError } = require('../errors');
 const { StatusCodes } = require('http-status-codes');
 const Product = require('../models/Product');
 
-const getAllProducts = (req, res) => {
-    res.send('All Products');
+const getAllProducts = async (req, res) => {
+    const products = await Product.findAll();
+    res.status(StatusCodes.OK).json({
+        'nbHits': products.length,
+        products: products
+    });
 }
 
-const getSingleProduct = (req, res) => {
-    res.send('Single Product');
+const getSingleProduct = async (req, res) => {
+    console.log()
+    const product = await Product.findOne({
+        where: {
+            id: req.params.productId
+        }
+    });
+    if(!product)
+        throw new CustomError('Couldn`t find product with id' + req.params.productId);
+    res.status(StatusCodes.OK).json(product);
 }
 
 const createProduct = async (req, res) => {
     req.body.user = req.user.id;
     const product = await Product.create(req.body);
-    if(!product)
+    if (!product)
         throw new CustomError('Prduct couldn`t be created!');
     res.status(StatusCodes.CREATED).json(product);
 }
