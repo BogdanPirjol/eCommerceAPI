@@ -1,6 +1,7 @@
 const User = require('../models/User');
-const { NotFoundError, BadRequest, UnauthorizedError } = require('../errors');
+const { NotFoundError, BadRequest, UnauthorizedError, CustomError } = require('../errors');
 const { StatusCodes } = require('http-status-codes');
+const { attachCookieToResponse } = require('../utils/jwt');
 
 const getAllUsers = async (req, res) => {
     const users = await User.findAll({
@@ -34,12 +35,13 @@ const showCurrentUser = async (req, res) => {
 
 const updateUser = async (req, res) => {
     const { name, email } = req.body;
-    if(!name || !email){
+    if (!name || !email) {
         throw new BadRequest('Please provide user and email!');
     }
-    const {id: userId} = req.user;
+    const { id: userId } = req.user;
+
     //method I: find user, modifiy fields and call .save() on sequqlize instance
-    const user = await User.findOne({
+    /* const user = await User.findOne({
         where: {
             id: userId
         }
@@ -49,13 +51,43 @@ const updateUser = async (req, res) => {
     const response = await user.save();
     if(!response){
         throw new NotFoundError(`User ${userId} not found!`);
+    } 
+    //end of first method*/
+
+    //method II: using sequelize.update() method
+
+    const updateData = await User.update({
+        name: name,
+        email: email
+    }, {
+        where: {
+            id: userId
+        },
+        returning: true
+    });
+    if(!updateData){
+        throw new CustomError('Couldn`t update user ' + userId);
     }
-    res.status(StatusCodes.OK).json({user: {
-        name: response.name,
-        email: response.email,
-        role: response.role,
-        id: response.id
-    }});
+    const user = updateData[1][0];
+
+    //end of second method
+
+    attachCookieToResponse(res, {
+        name: user.name,
+        id: user.id,
+        role: user.role
+    });
+
+    res.status(StatusCodes.OK).json({
+        user: {
+            id: user.id,
+            name: user.name,
+            email: user.email
+        }
+    });
+
+    //NOTICE: in where clause, is searching just for userId. That means data in user session differ from data in DB
+    //Should search for name, email and id, and update for new values
 }
 
 const updateUsersPassword = async (req, res) => {
