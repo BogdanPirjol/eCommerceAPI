@@ -5,10 +5,12 @@ require('express-async-errors');
 const app = express();
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
+const fileUpload = require('express-fileupload');
 
 //middleware
 app.use(express.static('public'));
 app.use(express.json());
+app.use(fileUpload());
 app.use(morgan('tiny'));
 app.use(cookieParser(process.env.JWT_SECRET));
 
@@ -26,7 +28,7 @@ const userRouter = require('./routes/userRoutes');
 const productRouter = require('./routes/productRoutes');
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/users', userRouter);
-app.use('./api/v1/products', productRouter);
+app.use('/api/v1/products', productRouter);
 
 //something went wrong middleware
 const notFound = require('./middleware/notFound');

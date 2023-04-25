@@ -1,6 +1,7 @@
 const { CustomError, NotFoundError } = require('../errors');
 const { StatusCodes } = require('http-status-codes');
 const Product = require('../models/Product');
+const path = require('path');
 
 const getAllProducts = async (req, res) => {
     const products = await Product.findAll();
@@ -22,7 +23,7 @@ const getSingleProduct = async (req, res) => {
 }
 
 const createProduct = async (req, res) => {
-    req.body.user = req.user.id;
+    req.body.userId = req.user.id;
     const product = await Product.create(req.body);
     if (!product)
         throw new CustomError('Prduct couldn`t be created!');
@@ -58,7 +59,11 @@ const deleteProduct = async (req, res) => {
 }
 
 const uploadImage = async (req, res) => {
-    res.send('Image uploaded');
+    const image = req.files.img;
+    const storagePath = path.join(__dirname, '../public/images', image.name);
+    const moved = await image.mv(storagePath);
+    console.log(moved);
+    res.status(StatusCodes.CREATED).json({path: storagePath});
 }
 
 module.exports = {
