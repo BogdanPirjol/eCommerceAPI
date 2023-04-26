@@ -6,8 +6,7 @@ const Product = require('./Product');
 const Review = sequelize.define('Review', {
     id: {
         type: DataTypes.UUID,
-        defaultValue: DataTypes.UUIDV4,
-        primaryKey: true
+        defaultValue: DataTypes.UUIDV4
     },
     rating: {
         type: DataTypes.INTEGER,
@@ -27,10 +26,21 @@ const Review = sequelize.define('Review', {
     },
     comment: {
         type: DataTypes.STRING(5000)
+    },
+    //composite primary key
+    userId: {
+        type: DataTypes.UUID,
+        primaryKey: true
+    },
+    productId: {
+        type: DataTypes.UUID,
+        primaryKey: true
     }
+    //end of composite primary key
 });
 
-User.hasMany(Review, {
+
+ User.hasMany(Review, {
     foreignKey: {
         name: 'userId',
         type: DataTypes.UUID,
@@ -60,6 +70,11 @@ Review.belongsTo(Product, {
         type: DataTypes.UUID,
         allowNull: false
     }
-});
+}); 
 
 module.exports = Review;
+
+
+//we have to ensure than an user can post maximum one review per product
+//there are two aproaces: by defining a composite primary key OR by create that logic in the controller
+//actual implementantion: method I
