@@ -5,9 +5,6 @@ const { attachCookieToResponse } = require('../utils/jwt');
 
 const getAllUsers = async (req, res) => {
     const users = await User.findAll({
-        where: {
-            role: 'user'
-        },
         attributes: ['id', 'name', 'email', 'role']
     });
     if (!users) {
