@@ -10,14 +10,15 @@ const Product = sequelize.define('Products', {
     },
     name: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: false,
+        len: [1, 100]
     },
     price: {
         type: DataTypes.FLOAT,
         allowNull: false
     },
     description: {
-        type: DataTypes.STRING
+        type: DataTypes.STRING(5000)
     },
     image: {
         type: DataTypes.STRING,
@@ -35,18 +36,20 @@ const Product = sequelize.define('Products', {
         type: DataTypes.ARRAY(DataTypes.STRING)
     },
     featured: {
-        type: DataTypes.BOOLEAN
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
     },
     freeShiping: {
-        type: DataTypes.BOOLEAN
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
     },
     inventory: {
         type: DataTypes.INTEGER,
-        allowNull: false
+        defaultValue: 0
     },
     averageRating: {
         type: DataTypes.FLOAT,
-        allowNull: false
+        defaultValue: 0
     }
 });
 
