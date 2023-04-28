@@ -41,7 +41,14 @@ const logout = (req, res) => {
 
 const register = async (req, res) => {
     const { name, email, password } = req.body;
-    const user = await User.create({ name, email, password });
+    if(!name || !email || !password)
+        throw new BadRequest('Please provide name, email and password!');
+
+    //check if is first account
+    if(User.checkFirstUser())
+        req.body.role = 'admin'
+
+    const user = await User.create(req.body);
     const userToken = createToken(user);
     attachCookieToResponse(res, userToken);
     res.status(StatusCodes.CREATED).json({ "user": userToken});
