@@ -18,17 +18,15 @@ const createReview = async (req, res) => {
 
 const getAllReviews = async (req, res) => {
     //method I: return reviews associated infos like user and product 
-    /* const reviews = await Review.findAll({
+    const reviews = await Review.findAll({
         include: [ Product, {
             model: User,
-            attributes: {
-                exclude: ['password']
-            }
+            attributes: ['name']
         }]
-    }); */
+    });
 
     //method II: return just reviews infos
-    const reviews = await Review.findAll();
+    /* const reviews = await Review.findAll(); */
     res.status(StatusCodes.OK).json({
         count: reviews.length,
         reviews

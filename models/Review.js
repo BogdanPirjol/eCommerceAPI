@@ -37,10 +37,36 @@ const Review = sequelize.define('Review', {
         primaryKey: true
     }
     //end of composite primary key
-});
+},
+    {
+        hooks: {
+            async afterCreate(review) {
+                const product = await review.getProduct();
+                this.setAverageReview(product);
+            },
+            async afterUpdate(review) {
+                const product = await review.getProduct();
+                this.setAverageReview(product);
+            },
+            async afterDestroy(review) {
+                const product = await review.getProduct();
+                this.setAverageReview(product);
+            }
+        }
+    });
 
+Review.setAverageReview = async (product) => {
+    const res = await product.getReviews();
+    let totalRating = 0
+    res.forEach(item => {
+        totalRating += item.rating
+    });
+    product.averageRating = Math.ceil(totalRating / res.length);
+    product.reviewCounter = res.length;
+    product.save();
+}
 
- User.hasMany(Review, {
+User.hasMany(Review, {
     foreignKey: {
         name: 'userId',
         type: DataTypes.UUID,
@@ -70,7 +96,7 @@ Review.belongsTo(Product, {
         type: DataTypes.UUID,
         allowNull: false
     }
-}); 
+});
 
 module.exports = Review;
 

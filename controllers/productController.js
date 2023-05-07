@@ -1,7 +1,9 @@
 const { CustomError, NotFoundError, BadRequest } = require('../errors');
 const { StatusCodes } = require('http-status-codes');
 const Product = require('../models/Product');
+const Review = require('../models/Review');
 const path = require('path');
+const User = require('../models/User');
 
 const getAllProducts = async (req, res) => {
     const products = await Product.findAll();
@@ -15,6 +17,14 @@ const getSingleProduct = async (req, res) => {
     const product = await Product.findOne({
         where: {
             id: req.params.productId
+        },
+        include: {
+            model: Review,
+            required: true,
+            include: {
+                model: User,
+                attributes: ['name']
+            }
         }
     });
     if(!product)
@@ -60,7 +70,7 @@ const deleteProduct = async (req, res) => {
 
 const uploadImage = async (req, res) => {
     const image = req.files.img;
-    //check for fiele exsistance
+    //check for file exsistance
     if(!image)
         throw new BadRequest('No file uploaded!');
     //check for file type (must to be image)

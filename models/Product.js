@@ -1,5 +1,5 @@
 const sequelize = require('../db/connectDB')();
-const { DataTypes } = require('sequelize');
+const { DataTypes, UUID } = require('sequelize');
 const User = require('./User');
 
 const Product = sequelize.define('Products', {
@@ -47,6 +47,10 @@ const Product = sequelize.define('Products', {
         type: DataTypes.INTEGER,
         defaultValue: 0
     },
+    reviewCounter: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0
+    },
     averageRating: {
         type: DataTypes.FLOAT,
         defaultValue: 0
@@ -67,6 +71,5 @@ Product.belongsTo(User, {
         allowNull: false
     }
 });
-
 
 module.exports = Product;

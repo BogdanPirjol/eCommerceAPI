@@ -7,7 +7,7 @@ const {
     updateUsersPassword,
     showCurrentUser } = require('../controllers/userController');
 //public
-router.route('/').get(authenticateUser, authorizePermissions('user'), getAllUsers);
+router.route('/').get(authenticateUser, authorizePermissions('admin'), getAllUsers);
 
 //protected
 router.route('/showMe').get(authenticateUser, showCurrentUser);

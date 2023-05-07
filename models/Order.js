@@ -1,4 +1,5 @@
-const { UUID, UUIDV4, INTEGER, FLOAT, ARRAY, STRING } = require('sequelize');
+const { UUID, UUIDV4, INTEGER, FLOAT, ARRAY, STRING, DataTypes } = require('sequelize');
+const User = require('./User');
 const sequelize = require('../db/connectDB')();
 
 const Order = sequelize.define('Order', {
@@ -9,32 +10,46 @@ const Order = sequelize.define('Order', {
     },
     tax: {
         type: INTEGER,
-        allowNull: false
+        defaultValue: 0
     },
     shippingFee: {
         type: INTEGER,
-        allowNull: false
-    }, 
+        defaultValue: 0
+    },
     subtotal: {
         type: FLOAT,
-        allowNull: false
+        defaultValue: 0
     },
     total: {
         type: FLOAT,
-        allowNull: false
-    },
-    cartItems: {
-        type: ARRAY[STRING]
+        defaultValue: 0
     },
     status: {
-        type: STRING
+        type: STRING,
+        defaultValue: 'pending'
     },
     clientSecret: {
         type: STRING,
-        allowNull: false
-    }, 
+        defaultValue: 'null'
+    },
     paymentId: {
         type: STRING,
+        defaultValue: 'null'
+    }
+});
+
+User.hasMany(Order, {
+    foreignKey: {
+        name: 'userId',
+        type: UUID,
+        allowNull: false
+    }
+});
+
+Order.belongsTo(User, {
+    foreignKey: {
+        name: 'userId',
+        type: UUID,
         allowNull: false
     }
 });

@@ -59,6 +59,11 @@ User.init({
                 }
             }
         }
-    });
+});
+
+User.prototype.checkPassword = async function (passowrd) {
+    const isMatch = await bcrypt.compare(passowrd, this.dataValues.password);
+    return isMatch;
+}
 
 module.exports = User;

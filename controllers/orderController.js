@@ -2,12 +2,15 @@ const { StatusCodes } = require('http-status-codes');
 const Order = require('../models/Order');
 const Product = require('../models/Product');
 const OrderProduct = require('../models/OrderProduct');
-const { BadRequest } = require('../errors');
+const User = require('../models/User');
+const { BadRequest, UnauthorizedError } = require('../errors');
 const NotFound = require('../errors/notFound');
 const stripe = require('stripe')('sk_test_51Mv1NQBkeolJlHlyoRWR84DNgMJlnErnWVV815de3LZDsCOi5dAEtv9BV09jxOAnYhNWY44IoQXv891HxFSQgiD400Qin9N9gX')
+const { checkPermissions } = require('../utils');
+
 
 const fakePay = async (amount) => {
-    
+
     const paymentIntent = await stripe.paymentIntents.create({
         amount: amount,
         currency: 'ron',
@@ -19,28 +22,68 @@ const fakePay = async (amount) => {
 
 const getAllOrders = async (req, res) => {
     const orders = await Order.findAll();
-    res.status(StatusCodes.OK).json(orders);
+    res.status(StatusCodes.OK).json({count: orders.length, orders});
 }
 
 const getSingleOrder = async (req, res) => {
     const { orderId } = req.params;
-    if(orderId)
+    const { id: userId } = req.user;
+    if (!orderId)
         throw new BadRequest('Please provide an order id');
-    
+
+    const order = await Order.findOne({
+        where: {
+            id: orderId
+        },
+        include: [{
+            model: User
+        },
+        {
+            model: Product,
+            through: {
+                attributes: ['quantity']
+            }
+        }]
+    });
+
+    if (!order)
+        throw new NotFound(`Order with id ${orderId} doesn't exists`);
+
+    checkPermissions(req.user, order.userId);
+
+    res.json(order);
+
 }
 
 const getCurrentUserOrders = async (req, res) => {
-    res.send('Orders belong to user' + req.user.name);
+    const { id: userId } = req.user;
+    const userOrders = await Order.findAll({
+        where: {
+            userId
+        },
+        include: [
+            {
+                model: Product,
+                through: {
+                    attributes: ['quantity']
+                }
+            }
+        ]
+    });
+    res.status(StatusCodes.OK).json({
+        entries: userOrders.length,
+        userOrders
+    });
 }
 
 const createOrder = async (req, res) => {
     const { tax, shippingFee, items } = req.body;
     const { id: userId } = req.user;
 
-    if(!items || items.length < 1)
+    if (!items || items.length < 1)
         throw new BadRequest('The cart can`t be empty!');
-    
-    if(!tax || !shippingFee)
+
+    if (!tax || !shippingFee)
         throw new BadRequest('Please provide tax and shipping fee!');
 
     const order = await Order.create({
@@ -49,15 +92,15 @@ const createOrder = async (req, res) => {
 
     let subtotal = 0;
     let total = 0;
-    for(const cartItem of items){
+    for (const cartItem of items) {
         const dbItem = await Product.findOne({
             where: {
                 id: cartItem.product
             }
         });
-        if(!dbItem)
+        if (!dbItem)
             throw new NotFound(`Product with id ${cartItem.product} not found!`);
-        
+
         await OrderProduct.create({
             productId: dbItem.id,
             orderId: order.id,
@@ -87,7 +130,7 @@ const createOrder = async (req, res) => {
 }
 
 const updateOrder = async (req, res) => {
-    res.send(`Order with id ${req.params.orderId} was updated.`);
+    
 }
 
 module.exports = {
