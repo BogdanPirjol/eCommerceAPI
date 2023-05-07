@@ -7,6 +7,18 @@ const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
 const fileUpload = require('express-fileupload');
 
+//security packages
+const rateLimiter = require('express-rate-limit');
+const helmet = require('helmet');
+const xssClean = require('xss-clean');
+const cors = require('cors');
+
+
+
+app.use(helmet());
+app.use(cors());
+app.use(xssClean());
+
 //middleware
 app.use(express.static('public'));
 app.use(express.json());
