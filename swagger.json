@@ -10,7 +10,7 @@
   },
   "servers": [
     {
-      "url": "http://localhost:5000/api/v1"
+      "url": "https://ecommerce-api-v1-3lso.onrender.com/api/v1"
     }
   ],
   "tags": [{
