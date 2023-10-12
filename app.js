@@ -13,8 +13,6 @@ const helmet = require('helmet');
 const xssClean = require('xss-clean');
 const cors = require('cors');
 
-
-
 app.use(helmet());
 app.use(cors());
 app.use(xssClean());

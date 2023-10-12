@@ -12,7 +12,6 @@ const {
 router.route('/').get(getAllProducts)
 router.route('/:productId').get(getSingleProduct)
 
-
 //restricted routes: require authentications & authorization
 router.use(authenticateUser, authorizePermissions('admin'));
 router.route('/').post(createProduct);

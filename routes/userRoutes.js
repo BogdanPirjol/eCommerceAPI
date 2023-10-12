@@ -6,19 +6,19 @@ const {
     updateUser,
     updateUsersPassword,
     showCurrentUser } = require('../controllers/userController');
-//public
-router.route('/').get(authenticateUser, authorizePermissions('admin'), getAllUsers);
-
-//protected
-router.route('/showMe').get(authenticateUser, showCurrentUser);
-
-//public
-router.route('/:userId').get(authenticateUser, getSingleUser);
 
 
-//protected
-router.route('/updateUser').patch(authenticateUser, updateUser);
-router.route('/updatePassword').patch(authenticateUser, updateUsersPassword);
+
+router.use(authenticateUser);
+
+//user role
+router.route('/showMe').get(showCurrentUser);
+router.route('/:userId').get(getSingleUser);
+router.route('/updateUser').patch(updateUser);
+router.route('/updatePassword').patch(updateUsersPassword);
+
+//admin role
+router.route('/').get(authorizePermissions('admin'), getAllUsers);
 
 
 module.exports = router;

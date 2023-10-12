@@ -1,0 +1,1695 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "eCommerce API",
+    "description": "REST API who can manage: \n
+      - authentication \n
+      - products management\n
+      - reviews"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:5000/api/v1"
+    }
+  ],
+  "tags": [{
+    "name": "manage products",
+    "description": "Create, modify, delete or view products. Protected routes reuqires admin priviledges"
+  }],
+  "paths": {
+    "/auth/login" : {
+      "post": {
+        "tags": [
+          "authenticate users"
+        ],
+        "summary": "Logs in an user and returns an authentication cookie",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "password": {
+                    "type": "string",
+                    "format": "password",
+                    "example": "password"
+                  }
+                }
+              }
+            }
+          },
+          "description": "A JSON object that containt relevant data for log in (email, password).",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "User authenticated successfully.\nReturning a cookie named 'token'. You need to include this cookie in subsequent requests.",
+            "headers": {
+              "set-cookie": {
+                "$ref": "#/components/headers/set-cookie"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "user": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "example": "example_user"
+                        },
+                        "id": {
+                          "type": "string",
+                          "format": "uuid",
+                          "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+                        },
+                        "role": {
+                          "type": "string",
+                          "enum": ["user", "admin"]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/bad_request"
+          },
+          "401": {
+            "description": "Unauthorized reuqest! Returns a JSON with appropiate error message.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Wrong password!"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    
+    "/auth/register": {
+      "post": {
+        "tags": [
+          "authenticate users"
+        ],
+        "summary": "Registers an user and returns an authentication cookie",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "Joe"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "password": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User registered successfully. It returns a cookie named 'token' which should be included in any subsequent requests.",
+            "headers": {
+              "set-cookie": {
+                "$ref": "#/components/headers/set-cookie"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "user": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "example": "example_user"
+                        },
+                        "id": {
+                          "type": "string",
+                          "format": "uuid",
+                          "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+                        },
+                        "role": {
+                          "type": "string",
+                          "enum": ["user", "admin"]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/bad_request"
+          }
+        }
+      }
+    },
+    
+    "/auth/logout": {
+      "get": {
+        "tags": [
+          "authenticate users"
+        ],
+        "summary": "Logs out an user",
+        "responses": {
+          "200": {
+            "description": "Return a set-cookie header for 'token' with 'Expires' field equal to actual date.",
+            "headers": {
+              "set-cookie": {
+                "schema": {
+                  "type": "string",
+                  "example": "token=logout; Path=/; Expires=<actual date>; HttpOnly"
+                },
+                "description": "Sets 'token' cookie expires date to actual time for removal cookie purposes."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "msg": {
+                      "type": "string",
+                      "example": "user logged out!"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    
+    "/orders": {
+      "get": {
+        "security": [{
+          "cookieAuth": []
+        }],
+        "summary": "Returns all orders (requires admin role)",
+        "tags": ["manage orders"],
+        "responses": {
+          "200": {
+            "description": "Returns all orders",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "count": {
+                      "type": "number",
+                      "format": "int"
+                    },
+                    "orders": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/order"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/not_authorized"
+          }
+        }
+      },
+      "post": {
+        "security": [{
+          "cookieAuth": []
+        }],
+        "summary": "Creates an order",
+        "tags": ["manage orders"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "tax": {
+                    "type": "number",
+                    "format": "int"
+                  },
+                  "shippingFee": {
+                    "type": "number",
+                    "format": "int"
+                  },
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "product": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "price": {
+                          "type": "number",
+                          "format": "int"
+                        },
+                        "amount": {
+                          "type": "number",
+                          "format": "int"
+                        }
+                      },
+                      "required": ["product", "price", "amount"]
+                    }
+                  }
+                },
+                "required": ["tax", "shippingFee", "items"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Return payment intent info", 
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "tax": {
+                      "type": "number",
+                      "format": "int"
+                    },
+                    "shippingFee": {
+                      "type": "number",
+                      "format": "int"
+                    },
+                    "subtotal": {
+                      "type": "number",
+                      "format": "int"
+                    },
+                    "total": {
+                      "type": "number",
+                      "format": "int"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "clientSecret": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "paymentId": {
+                      "type": "string"
+                    },
+                    "userId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/bad_request"
+          },
+          "401": {
+            "$ref": "#/components/responses/not_authorized"
+          }
+        }
+      }
+    },
+    
+    "/orders/showMyOrders": {
+      "get": {
+        "security": [{
+          "cookieAuth": []
+        }],
+        "summary": "Get logged in users`s orders",
+        "tags": ["manage orders"],
+        "responses": {
+          "200": {
+            "description": "ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "entries": {
+                      "type": "number",
+                      "format": "int",
+                      "example": "3"
+                    },
+                    "userOrders": {
+                      "type": "array",
+                      "items": {
+                        "allOf": [{
+                          "$ref": "#/components/schemas/order"
+                        },{
+                            "type": "object",
+                            "properties": {
+                              "User": {
+                                "$ref": "#/components/schemas/user"
+                              },
+                              "Products": {
+                                "type": "array",
+                                "items": {
+                                  "allOf": [{
+                                    "$ref": "#/components/schemas/product"
+                                  },{
+                                    "type": "object",
+                                    "properties": {
+                                      "productCount": {
+                                        "type": "object",
+                                        "properties": {
+                                          "quantity": {
+                                            "type": "number",
+                                            "format": "int",
+                                            "example": "8"
+                                          }
+                                      }
+                                    }
+                                  }
+                                }]
+                              }
+                            }
+                          }
+                        }]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/not_authorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/not_found"
+          }
+        }
+      }
+    },
+    
+    "/orders/{orderId}": {
+      "parameters": [{
+          "$ref": "#/components/parameters/ordersId"
+        }
+      ],
+      "get": {
+        "security": [{
+          "cookieAuth": []
+        }],
+        "summary": "Returns specified order",
+        "tags": ["manage orders"],
+        "responses": {
+          "200": {
+            "description": "ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [{
+                    "$ref": "#/components/schemas/order"
+                  },{
+                    "type": "object",
+                    "properties": {
+                      "User": {
+                        "$ref": "#/components/schemas/user"
+                      },
+                      "Products": {
+                        "type": "array",
+                        "items": {
+                          "allOf": [{
+                            "$ref": "#/components/schemas/product"
+                          },{
+                            "type": "object",
+                            "properties": {
+                              "productCount": {
+                                "type": "object",
+                                "properties": {
+                                  "quantity": {
+                                    "type": "number",
+                                    "format": "int",
+                                    "example": "8"
+                                  }
+                                 }
+                              }
+                            }
+                          }]
+                        }
+                      }
+                    }
+                  }]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/not_authorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/not_found"
+          }
+        }
+      }
+    },
+    
+    "/products": {
+      "get": {
+        "tags": ["manage products"],
+        "summary": "Retrieve all products",
+        "responses": {
+          "200": {
+            "description": "Successfull request. Returns a JSON object containing all products",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "nbHits": {
+                      "type": "number",
+                      "format": "integer",
+                      "example": "23",
+                      "description": "count of returned products"
+                    },
+                    "products": {
+                      "type": "array",
+                      "items": {
+                        "allOf": [{
+                          "$ref": "#/components/schemas/product"
+                        },{
+                          "type": "object",
+                          "properties": {
+                            "Reviews": {
+                              "allOf": [{
+                                "$ref": "#/components/schemas/review"
+                              }, {
+                                "type": "object",
+                                "properties": {
+                                  "User": {
+                                    "type": "object",
+                                    "properties": {
+                                      "name": {
+                                        "type": "string"
+                                      }
+                                    }
+                                  }
+                                }
+                              }]
+                            }
+                          }
+                        }]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "security": [{
+          "cookieAuth": []
+        }],
+        "summary": "Creates a product",
+        "tags": ["manage products"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "image": {
+                      "type": "string"
+                    },
+                    "category": {
+                      "type": "string"
+                    },
+                    "price": {
+                      "type": "number",
+                      "format": "float"
+                    },  
+                    "description": {
+                      "type": "string"
+                    },
+                    "company": {
+                      "type": "string"
+                    },
+                    "colors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "featured": {
+                      "type": "boolean"
+                    },
+                    "freeShiping": {
+                      "type": "boolean"
+                    },
+                    "inventory": {
+                      "type": "number",
+                      "format": "integer"
+                    }
+                },
+                "required": ["name", "image", "company", "price", "category"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Product created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "example": "a7adbab3-4a87-4cdf-9bde-609ba7a68647"
+                    },
+                    "featured": {
+                      "type": "boolean"
+                    },
+                    "freeShiping": {
+                      "type": "boolean"
+                    },
+                    "inventory": {
+                      "type": "number",
+                      "format": "integer"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "image": {
+                      "type": "string",
+                      "example": "/public/image.png"
+                    },
+                    "company": {
+                      "type": "string"
+                    },
+                    "category": {
+                      "type": "string"
+                    },
+                    "price": {
+                      "type": "number",
+                      "format": "integer"
+                    },
+                    "description": {
+                      "type": "string"
+                    },
+                    "colors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "example": "#00ff00"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/not_authorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/bad_request"
+          }
+        }
+      }
+    },
+    
+    "/products/{productId}": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/productsId"
+        }  
+      ],
+      "get": {
+        "tags": ["manage products"],
+        "summary": "Return specified product",
+        "responses": {
+          "200": {
+            "description": "Returns product specified by productId parameter.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/product"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/not_found"
+          }
+        }
+      },
+      "patch": {
+        "security": [{
+          "cookieAuth": []
+        }],
+        "summary": "Modify a product",
+        "tags": ["manage products"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "image": {
+                      "type": "string"
+                    },
+                    "category": {
+                      "type": "string"
+                    },
+                    "price": {
+                      "type": "number",
+                      "format": "float"
+                    },  
+                    "description": {
+                      "type": "string"
+                    },
+                    "company": {
+                      "type": "string"
+                    },
+                    "colors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "featured": {
+                      "type": "boolean"
+                    },
+                    "freeShiping": {
+                      "type": "boolean"
+                    },
+                    "inventory": {
+                      "type": "number",
+                      "format": "integer"
+                    }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Product updated. Returns model of a updated product.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "example": "a7adbab3-4a87-4cdf-9bde-609ba7a68647"
+                    },
+                    "featured": {
+                      "type": "boolean"
+                    },
+                    "freeShiping": {
+                      "type": "boolean"
+                    },
+                    "inventory": {
+                      "type": "number",
+                      "format": "integer"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "image": {
+                      "type": "string",
+                      "example": "/public/image.png"
+                    },
+                    "company": {
+                      "type": "string"
+                    },
+                    "category": {
+                      "type": "string"
+                    },
+                    "price": {
+                      "type": "number",
+                      "format": "integer"
+                    },
+                    "description": {
+                      "type": "string"
+                    },
+                    "colors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "example": "#00ff00"
+                      }
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "userId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/not_found"
+          },
+          "401": {
+            "$ref": "#/components/responses/not_authorized"
+          }
+        }
+      },
+      "delete": {
+        "security": [{
+          "cookieAuth": []
+        }],
+        "summary": "Deletes a product",
+        "tags": ["manage products"],
+        "responses": {
+          "200": {
+            "description": "Product deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "msg": {
+                      "type": "string",
+                      "example": "Product deleted!"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/not_authorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/not_found"
+          }
+        }
+      }
+    },
+    
+    "/products/uploadImage": {
+      "post": {
+        "security": [{
+          "cookieAuth": []
+        }],
+        "consumes": "multipart/form-data",
+        "summary": "Uploades an image and returns the path of stored image",
+        "tags": ["manage products"],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "img": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Image uploaded successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "type": "string",
+                      "example": "images/WhatsApp Image 2023-09-30 at 19.20.17.jpeg",
+                      "description": "Refers location on the server where image is available"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/not_authorized"
+          },
+          "404": {
+            "description": "One or all upload restrictions are broken: \n
+            - the file is too big (it`s size have to big smaller than 10 MB)\n
+            - mime type is not image\n
+            - no file is choosen (sent)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Sugestive message indicativ error reason"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    
+    "/reviews": {
+      "get": {
+        "tags": ["manage reviews"],
+        "summary": "Returns all reviews",
+        "responses": {
+          "200": {
+            "description": "Return a JSON object containing all reviews.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties" :{
+                    "count": {
+                      "type": "number",
+                      "format": "int",
+                      "example": "1"
+                    },
+                    "reviews": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/review"
+                      }
+                    }
+                  } 
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["manage reviews"],
+        "summary": "Creates a review",
+        "security": [{
+          "cookieAuth": []
+        }],
+        "requestBody": {
+          "content":{
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "productId": {
+                    "type": "string",
+                    "format": "uuid",
+                  },
+                  "rating": {
+                    "type": "number",
+                    "format": "int",
+                  },
+                  "title": {
+                    "type": "string",
+                    "example": "Review Title"
+                  },
+                  "comment": {
+                    "type": "string",
+                    "example": "Review data"
+                  }
+                },
+                "required": ["productId", "rating", "title"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Returns a JSON object with details about created review.", 
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/review"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/bad_request"
+          },
+          "500": {
+            "description": "Respone recieved when a user tries to to add more than 1 reviews to same product (At DB level is configured a primary composite key formed with product and user)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Validation error: duplicate key value violates unique constraint \"Reviews_pkey\""
+                    },
+                    "details": {
+                      "type": "string",
+                      "example": "Key (\"userId\", \"productId\")=(83e96b36-5c43-4460-be67-cfdfaa357164, f52f6df0-ff02-4027-b281-e347a83f40ee) already exists."
+                    },
+                    "parameters": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                      },
+                      "examples": ["2e0d90d5-883c-4181-8628-10ec5c0e1a5f", "4","test review 3","adding a description to test review 3", "83e96b36-5c43-4460-be67-cfdfaa357164","f52f6df0-ff02-4027-b281-e347a83f40ee","2023-10-07 11:21:46.314 +00:00","2023-10-07 11:21:46.314 +00:00"]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    
+    "/reviews/{reviewId}": {
+      "parameters": [{
+        "$ref": "#/components/parameters/reviewsId" 
+      }],
+      "get": {
+        "tags": ["manage reviews"],
+        "summary": "Returns review specified by 'reviewId' parameter.",
+        "responses": {
+          "200": {
+            "description": "Returns a JSON with specified review.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/review"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/not_found"
+          }
+        }
+      },
+      "patch": {
+        "tags": ["manage reviews"],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "summary": "Updates a review",
+        "requestBody": {
+          "content":{
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "productId": {
+                    "type": "string",
+                    "format": "uuid",
+                  },
+                  "rating": {
+                    "type": "number",
+                    "format": "int",
+                  },
+                  "title": {
+                    "type": "string",
+                    "example": "Review Title"
+                  }
+                },
+                "required": ["productId", "rating", "title"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Returns a JSON object representing review with submited updates.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/review"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/bad_request"
+          },
+          "401": {
+            "description": "User is not authorized to perfom this actions beacuse it`s not the owner (creator) of review.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/not_authorized"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/not_found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete reviews",
+        "tags": ["manage reviews"],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Review deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Review deleted."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/not_found"
+          },
+          "401": {
+            "description": "Users not authorized to delete review because either it's not the owner of review or doesn't have admin role",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/not_authorized"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    
+    "/users": {
+      "get": {
+        "security": [{
+          "cookieAuth": []
+        }],
+        "summary": "Get all users (requires admin privileges)",
+        "tags": ["manage users"],
+        "responses": {
+          "200": {
+            "description": "Returns a JSON object containing data about users",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "nbHits": {
+                      "type": "number",
+                      "format": "integer"
+                    },
+                    "users": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/user"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/not_authorized"
+          }
+        }
+      }
+    },
+    
+    "/users/showMe": {
+      "get": {
+        "security": [{
+          "cookieAuth": []
+        }],
+        "summary": "returns data about logged in user",
+        "tags": ["manage users"],
+        "responses": {
+          "200": {
+            "description": "Returns JSON object with logged in user.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "user": {
+                      "$ref": "#/components/schemas/user"
+                    }
+                  }
+                }
+              }
+            }
+          }, 
+          "401": {
+            "$ref": "#/components/responses/not_authorized"
+          }
+        }
+      }
+    },
+    
+    "/users/{userId}": {
+      "parameters": [{
+        "$ref": "#/components/parameters/usersId"
+      }],
+      "get": {
+        "security": [{
+          "cookieAuth": []
+        }],
+        "summary": "returns data about a user",
+        "tags": ["manage users"],
+        "responses": {
+          "200": {
+            "description": "Returns data about a user (any user). Requires admin privileges.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/user"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    
+    "/users/updateUser": {
+      "patch": {
+        "security": [{
+          "cookieAuth": []
+        }],
+        "summary": "Updates name and email of a user",
+        "tags": ["manage users"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "name"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  }
+                },
+                "required": ["name", "email"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Returns updated data about user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/user"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    
+    "/users/updatePassword": {
+      "patch":{
+        "security": [{
+          "cookieAuth": []
+        }],
+        "summary": "Updates password of logged in user",
+        "tags": ["manage users"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "oldPassword": {
+                    "type": "string",
+                    "format": "password"
+                  },
+                  "newPassword": {
+                    "type": "string",
+                    "format": "password"
+                  }
+                },
+                "required": ["newPassword", "oldPassword"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Password updated successfully. Returns data about user (user token is updated also)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/user"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "String provided in old password doesn`t match with actual password",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Old password doesn`t match with users password!"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  
+  "components": {
+    "parameters": {
+      "productsId": {
+        "in": "path",
+        "name": "productId",
+        "schema": {
+          "type": "string",
+          "format": "uuidv4",
+          "example": "42c5f47b-c8de-42f0-983e-fb48e7b0a93f"
+        },
+        "required": true
+      },
+      
+      "ordersId": {
+        "name": "orderId",
+        "in": "path",
+        "schema": {
+          "type": "string",
+          "format": "uuidv4",
+          "example": "42c5f47b-c8de-42f0-983e-fb48e7b0a93f"
+        },
+        "required": true
+      },
+      
+      "reviewsId": {
+        "name": "reviewId",
+        "in": "path",
+        "schema": {
+          "type": "string",
+          "format": "uuidv4",
+          "example": "42c5f47b-c8de-42f0-983e-fb48e7b0a93f"
+        },
+        "required": true
+      },
+      
+      "usersId": {
+        "name": "userId",
+        "in": "path",
+        "schema": {
+          "type": "string",
+          "format": "uuidv4",
+          "example": "42c5f47b-c8de-42f0-983e-fb48e7b0a93f"
+        },
+        "required": true
+      }
+    },
+    
+    "responses": {
+      "success": {
+        "description": "ok"
+      },
+      "bad_request": {
+        "description": "Bad request. Some or all required fields are missing.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Please provide <missing values>!"
+                }
+              }
+            }
+          }
+        }
+      },
+      "not_found": {
+        "description": "Requested resource doesn`t exist.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Resource with id <uuid_string> does not exist!"
+                }
+              }
+            }
+          }
+        }
+      },
+      "not_authorized": {
+        "description": "Users is not authorized to access requested resource.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Unauthorized to acces requested resource!"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    
+    "securitySchemes": {
+      "cookieAuth": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "token"
+      }
+    },
+    
+    "headers": {
+      "set-cookie": {
+        "schema": {
+          "type": "string"
+        },
+        "description": "A JWT string which hold relevant data for session management and user authorization."
+      }
+    },
+
+    "schemas": {
+      "product": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "example": "product name"
+          },
+          "price": {
+            "type": "number",
+            "format": "int32",
+            "example": "23999"
+          },
+          "description": {
+            "type": "string",
+          },
+          "image": {
+            "type": "string",
+            "example": "https://dl.airtable.com/.attachmentThumbnails/0446e84c5bca9643de3452a61b2d6195/1b32f48b"
+          },
+          "category": {
+            "type": "string",
+            "example": "bedroom"
+          },
+          "company": {
+            "type": "string",
+            "example": "ikea"
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "colors": {
+            "type": "array",
+            "items":{
+              "type": "string",
+              "example": "#0000ff"
+            }
+          },
+          "featured": {
+            "type": "boolean",
+            "example": "false"
+          },
+          "freeShipping": {
+            "type": "boolean",
+            "example": "false"
+          },
+          "inventory": {
+            "type": "number",
+            "format": "integer", 
+            "example": "300"
+          },
+          "reviewCounter": {
+            "type": "number",
+            "format": "integer", 
+            "example": "20"
+          },
+          "averageRating": {
+            "type": "number",
+            "format": "integer", 
+            "minimum": "1",
+            "maximum": "10",
+            "example": "8"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+
+      "review": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+          },
+          "rating": {
+            "type": "number",
+            "format": "int",
+          },
+          "title": {
+            "type": "string",
+            "example": "Example title",
+          },
+          "comment": {
+            "type": "string",
+            "example": "Example review description",
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "productId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+
+      "reviewUserExtended": {
+        "allOf": [{
+          "$ref": "#/components/schemas/review"
+        }, {
+          "type": "object",
+          "properties": {
+            "user": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }]
+      },
+
+      "user": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+          },
+          "name": {
+            "type": "string",
+            "example": "Joe Doe",
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+          },
+          "role": {
+            "type": "string",
+            "enum": ["admin", "user"]
+          }
+        }
+      },
+
+      "order": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+          },
+          "tax": {
+            "type": "number",
+            "format": "int",
+          },
+          "shippingFee": {
+             "type": "number",
+            "format": "int",
+          },
+          "subtotal": {
+             "type": "number",
+            "format": "float",
+          },
+          "total": {
+             "type": "number",
+            "format": "float"
+          },
+          "status": {
+            "type": "string",
+          },
+          "clientSecret": {
+            "type": "string",
+          },
+          "paymentId": {
+            "type": "string",
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+
+      "timestamps": {
+        "type": "object",
+        "properties": {
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+
+      "not_authorized": {
+        "type": "object",
+        "properties": {
+          "messagge": {
+            "type": "string",
+            "example": "Not authorized to perform this action"
+          }
+        }
+      }
+    }
+  }  
+}

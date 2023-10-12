@@ -27,10 +27,18 @@ const getSingleUser = async (req, res) => {
 }
 
 const showCurrentUser = async (req, res) => {
-    res.status(StatusCodes.OK).json({ user: req.user });
+    const currentUser = await User.findOne({
+        where: {
+            id: req.user.id
+        },
+        attributes: ["name", "email", "id", "role"]
+    });
+    if(!currentUser)
+        throw new NotFoundError('Ups! Requested user doesn`t exists!');
+    res.json({user: currentUser});
 }
 
-const updateUser = async (req, res) => {
+const  updateUser = async (req, res) => {
     const { name, email } = req.body;
     if (!name || !email) {
         throw new BadRequest('Please provide user and email!');
@@ -103,9 +111,9 @@ const updateUsersPassword = async (req, res) => {
     }
     const isPasswordMatch = await user.checkPassword(oldPassword);
     if (!isPasswordMatch) {
-        throw new UnauthorizedError('Old password doesn`t match with users password!');
+        throw new BadRequest('Old password doesn`t match with users password!');
     }
-    const result = await user.update({
+    const {name, email, id, role} = await user.update({
         password: newPassword
     }, {
         where: {
@@ -113,7 +121,7 @@ const updateUsersPassword = async (req, res) => {
         }
     });
 
-    res.json(result);
+    res.json({name, email, id, role});
 }
 
 module.exports = {

@@ -43,9 +43,7 @@ const register = async (req, res) => {
     const { name, email, password } = req.body;
     if(!name || !email || !password)
         throw new BadRequest('Please provide name, email and password!');
-
-    //check if is first account
- 
+    
 
     const user = await User.create(req.body);
     const userToken = createToken(user);

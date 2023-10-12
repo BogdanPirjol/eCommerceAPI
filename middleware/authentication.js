@@ -5,7 +5,6 @@ const { isTokenValid } = require('../utils');
 
 const authenticateUser = async (req, res, next) => {
     const token = req.signedCookies.token;
-    
     if(!token)
         throw new UnauthenticatedError('Couldn`t authenticate user! (Expected user token cookie)');
     try{
