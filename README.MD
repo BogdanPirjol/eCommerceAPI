@@ -1,3 +1,5 @@
+For API documentation load content of 'swagger.json' into a swagger editor (swagger editor could be found at https://editor.swagger.io)
+
 #### Basic Routes and Middleware
 [x] setup /GET Route
 [x] setup express.json() middleware
