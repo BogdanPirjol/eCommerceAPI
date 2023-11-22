@@ -1,4 +1,4 @@
-REST API suitable for an eCommerce application, exposing mthods for basic CRUD operations to handle:
+REST API suitable for an eCommerce application, exposing methods for basic CRUD operations to handle:
  - authentication
  - users 
  - products
